@@ -16,5 +16,9 @@
   "bugs": {
     "url": "https://github.com/mike-shields-dev/book-library-api/issues"
   },
-  "homepage": "https://github.com/mike-shields-dev/book-library-api#readme"
+  "homepage": "https://github.com/mike-shields-dev/book-library-api#readme",
+  "dependencies": {
+    "express": "^4.18.1",
+    "mysql2": "^2.3.3"
+  }
 }
