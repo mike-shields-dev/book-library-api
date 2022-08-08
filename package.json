@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "pretest": "node scripts/create-database.js test",
+    "test": "mocha tests/**/*.test.js",
+    "posttest": "node scripts/drop-database.js test",
     "prestart": "node scripts/create-database.js",
     "start": "nodemon -r dotenv/config index.js"
   },
