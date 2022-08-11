@@ -1,19 +1,29 @@
+const path = require("path"); 
 const Sequelize = require('sequelize');
-const { DB_NAME, DB_USER, DB_PASSWORD, DB_HOST } = process.env;
+const ReaderModel = require('./readerModel');
+
+const envFile = process.env.NODE_ENV === "test" ? "../../.env.test" : "../../.env";
+
+require("dotenv").config({
+    path: path.join(__dirname, envFile),
+});
+
+const { DB_PASSWORD, DB_USER, DB_HOST, DB_PORT, DB_NAME } = process.env;
 
 function setupDatabase() {
-    const dbConnection = new Sequelize({
+    const dbConnection = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
         dialect: 'mysql',
-        database: DB_NAME,
-        username: DB_USER,
-        password: DB_PASSWORD,
         host: DB_HOST,
         port: DB_PORT,
         logging: false,
     });
 
+    const Reader = ReaderModel(dbConnection, Sequelize);
+
     dbConnection.sync({ alter: true });
-    return {};
+    return {
+        Reader, 
+    };
 }
 
 module.exports = setupDatabase();
