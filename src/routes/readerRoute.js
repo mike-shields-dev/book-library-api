@@ -1,5 +1,4 @@
-const { Router } = require("express");
-const router = Router();
+const router = require("express").Router();
 const addDbReaderToReqElseRes404 = require("../middlewares/addDbReaderToReqElseRes404");
 const {
   createOne,
