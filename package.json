@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "pretest": "node scripts/create-database.js test",
-    "test": "mocha tests/**/*.test.js",
-    "posttest": "node scripts/drop-database.js test",
+    "pretest": "NODE_ENV=test node scripts/create-database.js",
+    "test": "NODE_ENV=test mocha tests/**/*.test.js",
+    "posttest": "NODE_ENV=test node scripts/drop-database.js",
     "prestart": "node scripts/create-database.js",
     "start": "nodemon -r dotenv/config index.js"
   },
@@ -28,6 +28,7 @@
     "mocha": "^10.0.0",
     "mysql2": "^2.3.3",
     "nodemon": "^2.0.19",
+    "sequelize": "^6.21.3",
     "supertest": "^6.2.4"
   }
 }
