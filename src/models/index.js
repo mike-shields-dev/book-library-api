@@ -1,6 +1,7 @@
 const path = require("path"); 
 const Sequelize = require('sequelize');
 const ReaderModel = require('./readerModel');
+const BookModel = require('./bookModel');
 
 const envFile = process.env.NODE_ENV === "test" ? "../../.env.test" : "../../.env";
 
@@ -19,10 +20,12 @@ function setupDatabase() {
     });
 
     const Reader = ReaderModel(dbConnection, Sequelize);
+    const Book = BookModel(dbConnection, Sequelize);
 
     dbConnection.sync({ alter: true });
     return {
         Reader, 
+        Book,
     };
 }
 

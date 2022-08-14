@@ -1,9 +1,10 @@
 const router = require("express").Router();
 
-router.get("/", (req, res) => {
-    res.status(200).json({ message: "Hello World" });
-});
+const { createOne, readAll } = require("../controllers/bookController");
 
+router
+    .post("/", createOne)
+    .get("/", readAll)
 
 module.exports = router;
 
