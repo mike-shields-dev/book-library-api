@@ -1,8 +1,19 @@
 const { Router } = require("express");
-const readerController = require("../controllers/readerController");
-
 const router = Router();
+const addDbReaderToReqElseRes404 = require("../middlewares/addDbReaderToReqElseRes404");
+const {
+  createOne,
+  readOne,
+  readAll,
+  updateOne,
+  deleteOne,
+} = require("../controllers/readerController");
 
-router.route("/").post(readerController.create).get(readerController.readAll);
+router
+  .post("/", createOne)
+  .get("/:id", addDbReaderToReqElseRes404, readOne)
+  .get("/", readAll)
+  .patch("/:id", addDbReaderToReqElseRes404, updateOne)
+  .delete("/:id", addDbReaderToReqElseRes404, deleteOne);
 
 module.exports = router;
