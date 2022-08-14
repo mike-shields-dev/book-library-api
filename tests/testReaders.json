@@ -1,14 +1,17 @@
 [
     {
         "name": "Elizabeth Bennet",
-        "email": "future_ms_darcy@gmail.com"
+        "email": "future_ms_darcy@gmail.com",
+        "password": "prawntoast"
     },
     {
         "name": "Arya Stark",
-        "email": "vmorgul@me.com"
+        "email": "vmorgul@me.com",
+        "password": "opensesame"
     },
     {
         "name": "Lyra Belacqua",
-        "email": "darknorth123@msn.org"
+        "email": "darknorth123@msn.org",
+        "password": "qwertyuiop"
     }
 ]
