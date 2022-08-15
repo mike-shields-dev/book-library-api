@@ -25,6 +25,28 @@ describe("/books", () => {
         expect(response.body.genre).to.equal("Fantasy");
         expect(response.body.ISBN).to.equal("978-0-395-19395-8");
       });
+
+      it("returns a 400 if title is not provided", async () => {
+        const response = await request(app).post("/books").send({
+          author: "J.R.R. Tolkien",
+          genre: "Fantasy",
+          ISBN: "978-0-395-19395-8",
+        });
+
+        expect(response.status).to.equal(400);
+        expect(response.body.error).to.equal("notNull Violation: Book.title cannot be null");
+      });
+
+      it("returns a 400 if author is not provided", async () => {
+        const response = await request(app).post("/books").send({
+          title: "The Lord of the Rings",
+          genre: "Fantasy",
+          ISBN: "978-0-395-19395-8",
+        });
+
+        expect(response.status).to.equal(400);
+        expect(response.body.error).to.equal("notNull Violation: Book.author cannot be null");
+      });
     });
   });
 
