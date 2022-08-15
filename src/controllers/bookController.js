@@ -1,7 +1,7 @@
 const { Book } = require('../models');
 const { createItem } = require('../utils/helpers');
 
-exports.createOne = async (req, res) => await createItem(req, res, Book);
+exports.createOne = (req, res) => createItem(req, res, Book);
 
 exports.readAll = async (req, res) => {
     const allBooks = await Book.findAll();
