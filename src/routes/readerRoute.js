@@ -1,5 +1,4 @@
 const router = require("express").Router();
-const addDbReaderToReqElseRes404 = require("../middlewares/addDbReaderToReqElseRes404");
 const {
   createOne,
   readOne,
@@ -10,9 +9,9 @@ const {
 
 router
   .post("/", createOne)
-  .get("/:id", addDbReaderToReqElseRes404, readOne)
   .get("/", readAll)
-  .patch("/:id", addDbReaderToReqElseRes404, updateOne)
-  .delete("/:id", addDbReaderToReqElseRes404, deleteOne);
+  .get("/:id", readOne)
+  .patch("/:id", updateOne)
+  .delete("/:id", deleteOne);
 
 module.exports = router;

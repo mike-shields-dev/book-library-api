@@ -1,32 +1,37 @@
 const { Reader } = require("../models");
 
-// addDbReaderToReqElseRes404 middleware is utilised in readerRouter
-// if a reader by ID is found, it is attached to the request object as req.foundDbReader, 
-// otherwise a 404 error is returned.
-
 exports.createOne = async (req, res) => {
-  const createdDbReader = await Reader.create(req.body);
-  res.status(201).send(createdDbReader);
+  const newReader = await Reader.create(req.body);
+  res.status(201).send(newReader);
 };
 
 exports.readAll = async (req, res) => {
-  const allDbReaders = await Reader.findAll();
-  res.status(200).send(allDbReaders);
+  const allReaders = await Reader.findAll();
+  res.status(200).json(allReaders);
 };
 
 exports.readOne = async (req, res) => {
-  const foundDbReader = req.foundDbReader
-  res.status(200).json(foundDbReader);
+  const reader = await Reader.findByPk(req.params.id);
+  if(!reader) {
+    return res.status(404).json({ error: 'Reader not found'});
+  }
+  res.status(200).json(reader);
 };
 
 exports.updateOne = async (req, res) => {
-  const foundDbReader = req.foundDbReader;
-  const updatedDbReader = await foundDbReader.update(req.body);
-  res.status(200).json(updatedDbReader);
+  const reader = await Reader.findByPk(req.params.id);
+  if(!reader) {
+    return res.status(404).json({ error: 'Reader not found'});
+  }
+  const updatedReader = await reader.update(req.body);
+  res.status(200).json(updatedReader);
 };
 
 exports.deleteOne = async (req, res) => {
-  const foundDbReader = req.foundDbReader;
-  await foundDbReader.destroy();
+  const reader = await Reader.findByPk(req.params.id);
+  if(!reader) {
+    return res.status(404).json({ error: 'Reader not found'});
+  }
+  await reader.destroy();
   res.sendStatus(204);
 };
