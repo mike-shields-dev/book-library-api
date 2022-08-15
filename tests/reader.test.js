@@ -28,6 +28,17 @@ describe('/readers', () => {
         expect(newReaderRecord.email).to.equal('future_ms_darcy@gmail.com');
         expect(newReaderRecord.password).to.equal('password');
       });
+
+      it('returns a 400 error if the password length is too short', async () => {
+        const response = await request(app).post('/readers').send({
+          name: 'Elizabeth Bennet',
+          email: 'future_ms_darcy@gmail.com',
+          password: 'passwrd',
+        });
+
+        expect(response.status).to.equal(400);
+        expect(response.body.error).to.equal('Validation error: Password must be at least 8 characters long');
+      });
     });
   });
 
