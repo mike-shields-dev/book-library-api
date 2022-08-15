@@ -67,7 +67,6 @@ describe('/readers', () => {
         response.body.forEach((reader) => {
           const expected = readers.find((a) => a.id === reader.id);
           
-          console.log({ id: expected.id });
           expect(reader.name).to.equal(expected.name);
           expect(reader.email).to.equal(expected.email);
           expect(reader.password).to.equal(expected.password);
