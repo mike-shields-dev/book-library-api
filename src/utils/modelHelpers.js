@@ -1,10 +1,4 @@
-async function handleIdRequest (req, res, model, itemName) {
-    const foundItem = await model.findByPk(req.params.id);
-    if(!foundItem) {
-        return res.status(404).json({ error: `${itemName} not found`});
-    }
-    req.item = foundItem;
-}
+const handleIdRequest = require('./handleIdRequest');
 
 exports.createItem = async (req, res, model) => {
     try {
@@ -20,19 +14,19 @@ exports.readAllItems = async (_, res, model) => {
     res.status(200).json(allItems);
 }
 
-exports.readOneItem = async (req, res, model, itemName) => {
-    await handleIdRequest(req, res, model, itemName)
+exports.readOneItem = async (req, res, model) => {
+    await handleIdRequest(req, res, model)
     res.status(200).json(req.item);
 }
 
-exports.updateOneItem = async (req, res, model, itemName) => {
-    await handleIdRequest(req, res, model, itemName)
+exports.updateOneItem = async (req, res, model) => {
+    await handleIdRequest(req, res, model)
     await req.item.update(req.body);
     res.status(200).json(req.item);
 }
 
-exports.deleteOneItem = async (req, res, model, itemName) => {
-    await handleIdRequest(req, res, model, itemName)
+exports.deleteOneItem = async (req, res, model) => {
+    await handleIdRequest(req, res, model)
     await req.item.destroy();
     res.sendStatus(204);
 }

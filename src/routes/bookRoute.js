@@ -1,13 +1,19 @@
 const router = require("express").Router();
+const {
+  createOne,
+  readAll,
+  readOne,
+  updateOne,
+  deleteOne,
+} = require("../controllers/bookController");
 
-const { createOne, readAll, readOne, updateOne, deleteOne } = require("../controllers/bookController");
+router.route("/")
+    .post(createOne)
+    .get(readAll);
 
-router
-    .post("/", createOne)
-    .get("/", readAll)
-    .get("/:id", readOne)
-    .patch("/:id", updateOne)
-    .delete("/:id", deleteOne);
+router.route("/:id")
+    .get(readOne)
+    .patch(updateOne)
+    .delete(deleteOne);
 
 module.exports = router;
-
