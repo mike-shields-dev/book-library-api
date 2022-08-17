@@ -8,12 +8,12 @@ const {
 } = require("../controllers/bookController");
 
 router.route("/")
-    .post(createOne)
-    .get(readAll);
+  .post(createOne)
+  .get(readAll);
 
 router.route("/:id")
-    .get(readOne)
-    .patch(updateOne)
-    .delete(deleteOne);
+  .get(readOne)
+  .patch(updateOne)
+  .delete(deleteOne);
 
 module.exports = router;
