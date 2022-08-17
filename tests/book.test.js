@@ -24,9 +24,9 @@ describe("/books", () => {
 
         expect(response.status).to.equal(201);
 
-        for(const key in newBook) {
+        Object.keys(newBook).forEach(key => {
           expect(newBook[key]).to.equal(createdBook[key]);
-        }
+        });
       });
 
       it("returns a 400 if title is not provided", async () => {
@@ -85,19 +85,20 @@ describe("/books", () => {
     describe("GET /books", () => {
       it("gets all books records", async () => {
         const response = await request(app).get("/books");
-        const resBooks = response.body;
+        const responseBooks = response.body;
 
         expect(response.status).to.equal(200);
-        expect(resBooks.length).to.equal(dbBooks.length);
+        expect(responseBooks.length).to.equal(dbBooks.length);
 
-        resBooks.forEach((resBook, i) => {
+        responseBooks.forEach((responseBook, i) => {
           const dbBook = dbBooks[i]
           
-          for(const key in resBook) {
-            if(["createdAt", "updatedAt"].includes(key)) return; 
+          const ignoredKeys = ["createdAt", "updatedAt"];
+          Object.keys(responseBook).forEach((key) => {
+            if(ignoredKeys.includes(key)) return; 
             
-            expect(resBook[key]).to.equal(dbBook[key])
-          }
+            expect(responseBook[key]).to.equal(dbBook[key])
+          });
         });
       });
     });
@@ -106,15 +107,15 @@ describe("/books", () => {
       it("gets books record by id", async () => {
         const { dataValues: dbBook } = dbBooks[0];
         const response = await request(app).get(`/books/${dbBook.id}`);
-        const resBook = response.body;
+        const responseBook = response.body;
 
         expect(response.status).to.equal(200);
         
-        for(const key in resBook) {
+        Object.keys(responseBook).forEach(key => {
           if(["createdAt", "updatedAt"].includes(key)) return; 
-          
-          expect(resBook[key]).to.equal(dbBook[key]);
-        }
+
+          expect(responseBook[key]).to.equal(dbBook[key]);
+        });
       });
 
       it("returns a 404 if the book is not found", async () => {
