@@ -76,23 +76,23 @@ describe("/readers", () => {
     describe("GET /readers", () => {
       it("gets all readers records", async () => {
         const response = await request(app).get("/readers");
+        const responseReaders = response.body;
 
         expect(response.status).to.equal(200);
-        expect(response.body.length).to.equal(existingReaders.length);
+        expect(responseReaders.length).to.equal(existingReaders.length);
 
-        response.body.forEach((responseReader, i) => {
+        responseReaders.forEach((responseReader, i) => {
           expect(responseReader).not.to.have.property("password");
 
-          const existingReader = existingReaders[i]
-          const { dataValues: matchingReader } = existingReaders.find(
+          const existingReader = existingReaders.find(
             (existingReader) => existingReader.id === responseReader.id
-          );
+          ).get();
 
-          const ignoredKeys = ["id", "createdAt", "updatedAt"];
-          Object.keys(matchingReader).forEach((key) => {
+          const ignoredKeys = ["createdAt", "updatedAt", "password"];
+          Object.keys(existingReader).forEach((key) => {
             if (ignoredKeys.includes(key)) return;
 
-            expect(matchingReader[key]).to.equal(existingReader[key]);
+            expect(existingReader[key]).to.equal(responseReader[key]);
           });
         });
       });
@@ -100,24 +100,25 @@ describe("/readers", () => {
 
     describe("GET /readers/:id", () => {
       it("gets readers record by id", async () => {
-        const reader = existingReaders[0];
-        const response = await request(app).get(`/readers/${reader.id}`);
+        const existingReader = existingReaders[0];
+        const response = await request(app).get(`/readers/${existingReader.id}`);
+        const responseReader = response.body;
 
         expect(response.status).to.equal(200);
-        expect(response.body).not.to.have.property("password");
+        expect(responseReader).not.to.have.property("password");
 
-        Object.keys(response.body).forEach((key) => {
+        Object.keys(responseReader).forEach((key) => {
           if (["createdAt", "updatedAt"].includes(key)) return;
 
-          expect(response.body[key]).to.equal(reader[key]);
+          expect(responseReader[key]).to.equal(existingReader[key]);
         });
       });
 
       it("returns a 404 if the reader does not exist", async () => {
         const response = await request(app).get("/readers/12345");
-
+        const errorMsg = response.body.error;
         expect(response.status).to.equal(404);
-        expect(response.body.error).to.equal("Reader not found");
+        expect(errorMsg).to.equal("Reader not found");
       });
     });
 
