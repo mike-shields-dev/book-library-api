@@ -6,11 +6,12 @@ async function handleIdRequest(req, res, model) {
   req.item = foundItem;
 }
 
-function sanitize(obj) {
-  delete obj?.password;
+function sanitizeIfNeeded(obj, model) {
+  if (model.name === "Reader") {
+    delete obj?.password;
+  }
   return obj;
 }
-
 
 exports.createItem = async (req, res, model) => {
   try {
@@ -22,19 +23,21 @@ exports.createItem = async (req, res, model) => {
 };
 
 exports.readAllItems = async (_, res, model) => {
-  const allItems = [...(await model.findAll())].map(sanitize);
+  let allItems = [...(await model.findAll())].map((item) =>
+    sanitizeIfNeeded(item, model)
+  );
   res.status(200).json(allItems);
 };
 
 exports.readOneItem = async (req, res, model) => {
   await handleIdRequest(req, res, model);
-  res.status(200).json(sanitize(req.item));
+  res.status(200).json(sanitizeIfNeeded(req.item, model));
 };
 
 exports.updateOneItem = async (req, res, model) => {
   await handleIdRequest(req, res, model);
   await req.item.update(req.body);
-  res.status(200).json(sanitize(req.item));
+  res.status(200).json(sanitizeIfNeeded(req.item, model));
 };
 
 exports.deleteOneItem = async (req, res, model) => {
