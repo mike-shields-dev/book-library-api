@@ -23,6 +23,8 @@ describe("/books", () => {
 
         expect(response.status).to.equal(201);
 
+        console.log(createdBook);
+
         Object.keys(createdBook).forEach((key) => {
           if (["id", "createdAt", "updatedAt"].includes(key)) return;
 
@@ -41,10 +43,10 @@ describe("/books", () => {
           .send(newBookEmptyTitle);
 
         expect(responseNoTitle.status).to.equal(400);
-        expect(responseNoTitle.body.error).to.equal("Title must be provided");
+        expect(responseNoTitle.body.error).to.equal("Book title must be provided");
 
         expect(responseEmptyTitle.status).to.equal(400);
-        expect(responseEmptyTitle.body.error).to.equal("Title cannot be empty");
+        expect(responseEmptyTitle.body.error).to.equal("Book title cannot be empty");
       });
 
       it("returns a 400 if author does not pass validation", async () => {
@@ -58,11 +60,11 @@ describe("/books", () => {
           .send(newBookEmptyAuthor);
 
         expect(responseNoAuthor.status).to.equal(400);
-        expect(responseNoAuthor.body.error).to.equal("Author must be provided");
+        expect(responseNoAuthor.body.error).to.equal("Book author must be provided");
 
         expect(responseEmptyAuthor.status).to.equal(400);
         expect(responseEmptyAuthor.body.error).to.equal(
-          "Author cannot be empty"
+          "Book author cannot be empty"
         );
       });
     });
@@ -122,7 +124,7 @@ describe("/books", () => {
         const response = await request(app).get(`/books/x`);
 
         expect(response.status).to.equal(400);
-        expect(response.body.error).to.equal("id must be a number");
+        expect(response.body.error).to.equal("Book id must be a number");
       });
     });
 
@@ -153,7 +155,7 @@ describe("/books", () => {
         const response = await request(app).patch(`/books/x`).send({});
 
         expect(response.status).to.equal(400);
-        expect(response.body.error).to.equal("id must be a number");
+        expect(response.body.error).to.equal("Book id must be a number");
       });
     });
 
@@ -179,7 +181,7 @@ describe("/books", () => {
         const response = await request(app).delete(`/books/x`);
 
         expect(response.status).to.equal(400);
-        expect(response.body.error).to.equal("id must be a number");
+        expect(response.body.error).to.equal("Book id must be a number");
       });
     });
   });

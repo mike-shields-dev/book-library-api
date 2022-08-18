@@ -26,6 +26,10 @@ function setupDatabase() {
     const Author = AuthorModel(dbConnection, Sequelize);
     const Genre = GenreModel(dbConnection, Sequelize);
 
+    Reader.hasMany(Book);
+    Genre.hasMany(Book);
+    Book.belongsTo(Genre);
+
     dbConnection.sync({ alter: true });
     return {
         Reader, 

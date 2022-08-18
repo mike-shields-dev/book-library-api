@@ -1,7 +1,7 @@
 async function handleIdRequest(req, res, model) {
   const { id } = req.params;
   if(Number.isNaN(Number(id))) {
-    return res.status(400).json({ error: "id must be a number" });
+    return res.status(400).json({ error: `${model.name} id must be a number` });
   }
   const foundItem = await model.findByPk(req.params.id);
   if (!foundItem) {
@@ -13,9 +13,20 @@ async function handleIdRequest(req, res, model) {
 function sanitizeIfNeeded(obj, model) {
   const dataValues = obj.get();
   if (model.name === "Reader") {
-    delete dataValues?.password;
+    delete dataValues.password;
   }
   return obj;
+}
+
+async function handleSequelizeError(res, err) {
+  let msg 
+  if (err.name === "SequelizeUniqueConstraintError") {
+    msg = err.errors[0].message;
+  }
+  if (err.name === "SequelizeValidationError") {
+    msg = err.message.split(":")[1].trim();
+  }
+  return res.status(400).json({ error: msg });
 }
 
 exports.createItem = async (req, res, model) => {
@@ -24,14 +35,7 @@ exports.createItem = async (req, res, model) => {
     newItem = sanitizeIfNeeded(newItem, model);
     res.status(201).json(newItem);
   } catch (err) {
-    let msg 
-    if (err.name === "SequelizeUniqueConstraintError") {
-      msg = err.errors[0].message;
-    }
-    if (err.name === "SequelizeValidationError") {
-      msg = err.message.split(":")[1].trim();
-    }
-    return res.status(400).json({ error: msg });
+    handleSequelizeError(res, err);
   }
 };
 

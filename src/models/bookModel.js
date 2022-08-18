@@ -5,10 +5,10 @@ module.exports = (dbConnection, DataTypes) => {
       allowNull: false,
       validate: {
         notNull: {
-          msg: "Title must be provided",
+          msg: "Book title must be provided",
         },
         notEmpty: {
-          msg: "Title cannot be empty",
+          msg: "Book title cannot be empty",
         },
       },
     }, 
@@ -17,16 +17,15 @@ module.exports = (dbConnection, DataTypes) => {
       allowNull: false,
       validate: {
         notNull: {
-          msg: "Author must be provided",
+          msg: "Book author must be provided",
         },
         notEmpty: {
-          msg: "Author cannot be empty",
+          msg: "Book author cannot be empty",
         },
       }
     },
-    genre: DataTypes.STRING,
     ISBN: DataTypes.STRING,
   };
-  const BookModel = dbConnection.define("Book", schema);
-  return BookModel;
+  
+  return dbConnection.define("Book", schema);
 };

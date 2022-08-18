@@ -138,11 +138,11 @@ describe("/readers", () => {
       it("deletes reader record by id", async () => {
         const reader = dbReaders[0];
         const response = await request(app).delete(`/readers/${reader.id}`);
-        const deletedReader = await Reader.findByPk(reader.id);
+        const deletedReaderRecord = await Reader.findByPk(reader.id);
 
         expect(response.status).to.equal(204);
         expect(response.body).to.be.empty;
-        expect(deletedReader).to.equal(null);
+        expect(deletedReaderRecord).to.equal(null);
       });
 
       it("returns a 404 if the reader is not found", async () => {

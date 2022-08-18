@@ -49,7 +49,7 @@ describe("/authors", () => {
     });
 
     describe("POST /authors", () => {
-      it("returns a 400 if name is already in the database", async () => {
+      it("returns a 400 if author name already exists", async () => {
         const duplicateAuthorResponse = await request(app)
           .post("/authors")
           .send(testAuthors[0]);
@@ -112,10 +112,10 @@ describe("/authors", () => {
       it("deletes an author by id", async () => {
         const dbAuthor = dbAuthors[0];
         const response = await request(app).delete(`/authors/${dbAuthor.id}`);
-        const deletedBookRecord = await Author.findByPk(dbAuthor.id);
+        const deletedAuthorRecord = await Author.findByPk(dbAuthor.id);
 
         expect(response.status).to.equal(204);
-        expect(deletedBookRecord).to.equal(null);
+        expect(deletedAuthorRecord).to.equal(null);
       });
 
       it("returns a 404 if the author is not found", async () => {

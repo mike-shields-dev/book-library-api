@@ -8,7 +8,8 @@
     "test": "NODE_ENV=test mocha tests/**/*.test.js",
     "posttest": "NODE_ENV=test node scripts/drop-database.js",
     "prestart": "node scripts/create-database.js",
-    "start": "nodemon -r dotenv/config index.js"
+    "start": "node index.js",
+    "start:dev": "nodemon -r dotenv/config index.js"
   },
   "repository": {
     "type": "git",

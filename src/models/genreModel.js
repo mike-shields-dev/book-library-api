@@ -1,10 +1,5 @@
 module.exports = (dbConnection, DataTypes) => {
   const schema = {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -21,6 +16,5 @@ module.exports = (dbConnection, DataTypes) => {
       },
     },
   };
-  const GenreModel = dbConnection.define("Genre", schema);
-  return GenreModel;
+  return dbConnection.define("Genre", schema);
 };

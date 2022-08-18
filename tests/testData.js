@@ -32,7 +32,7 @@ exports.testBooks = [
   {
     title: "The Lord of the Rings",
     author: "J.R.R. Tolkien",
-    genre: "Fantasy",
+    GenreId: 1,
     ISBN: "978-0-395-19395-8",
   },
   {
