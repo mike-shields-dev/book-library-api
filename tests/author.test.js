@@ -67,7 +67,6 @@ describe("/authors", () => {
         const responseAuthors = response.body;
 
         expect(response.status).to.equal(200);
-        expect(responseAuthors.length).to.equal(dbAuthors.length);
 
         dbAuthors.forEach((dbAuthor, i) => {
           const responseAuthor = responseAuthors[i]

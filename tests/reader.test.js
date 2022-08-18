@@ -66,7 +66,6 @@ describe("/readers", () => {
         const responseReaders = response.body;
 
         expect(response.status).to.equal(200);
-        expect(responseReaders.length).to.equal(dbReaders.length);
 
         dbReaders.forEach((dbReader) => {
           const matchingResponseReader = responseReaders.find(
