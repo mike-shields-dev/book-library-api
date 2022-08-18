@@ -3,21 +3,35 @@ const request = require("supertest");
 const { Reader } = require("../src/models");
 const app = require("../src/app");
 
+const readers = [
+  {
+    name: "Elizabeth Bennet",
+    email: "future_ms_darcy@gmail.com",
+    password: "12345678",
+  },
+  {
+    name: "Arya Stark",
+    email: "vmorgul@me.com",
+    password: "12345678",
+  },
+  {
+    name: "Lyra Belacqua",
+    email: "darknorth123@msn.org",
+    password: "12345678",
+  },
+];
+
 describe("/readers", () => {
-  before(async () => Reader.sequelize.sync());
-
-  beforeEach(async () => {
-    await Reader.destroy({ where: {} });
-  });
-
+  before(async () => Reader.sequelize.sync({ force: true }));
+  
   describe("with no records in the database", () => {
+    beforeEach(async () => {
+      await Reader.destroy({ where: {} });
+    });
+
     describe("POST /readers", () => {
       it("creates a new reader in the database", async () => {
-        const newReader = {
-          name: "Elizabeth Bennet",
-          email: "future_ms_darcy@gmail.com",
-          password: "12345678",
-        };
+        const newReader = readers[0];
         const response = await request(app).post("/readers").send(newReader);
         const responseReader = response.body;
         const dbReader = await Reader.findByPk(response.body.id, {
@@ -27,50 +41,39 @@ describe("/readers", () => {
         expect(response.status).to.equal(201);
         expect(responseReader).not.to.have.property("password");
 
-        const ignoredKeys = ["id", "createdAt", "updatedAt", "password"];
+        Object.keys(responseReader).forEach((key) => {
+          if(["id", "createdAt", "updatedAt"].includes(key)) return;
+          
+          expect(responseReader[key]).to.equal(newReader[key]);
+        });
+
         Object.keys(dbReader).forEach((key) => {
-          if (ignoredKeys.includes(key)) return;
-          expect(dbReader[key]).to.equal(newReader[key]);
+          if (["createdAt", "updatedAt", "password"].includes(key)) return;
+
           expect(dbReader[key]).to.equal(responseReader[key]);
         });
       });
 
-      it("returns a 400 error if the password length is too short", async () => {
-        const response = await request(app).post("/readers").send({
-          name: "Elizabeth Bennet",
-          email: "future_ms_darcy@gmail.com",
-          password: "1234567",
-        });
+      it("returns a 400 error if the password fails validation", async () => {
+        const readerShortPassword = { ...readers[0], password: "1234567" };
+        const response = await request(app).post("/readers").send(readerShortPassword);
 
         expect(response.status).to.equal(400);
         expect(response.body.error).to.equal(
-          "Validation error: Password must be at least 8 characters long"
+          "Password must be at least 8 characters long"
         );
       });
     });
   });
 
   describe("with records in the database", () => {
-    let existingReaders;
-
-    beforeEach(async () => {
-      existingReaders = await Promise.all([
-        Reader.create({
-          name: "Elizabeth Bennet",
-          email: "future_ms_darcy@gmail.com",
-          password: "password",
-        }),
-        Reader.create({
-          name: "Arya Stark",
-          email: "vmorgul@me.com",
-          password: "password",
-        }),
-        Reader.create({
-          name: "Lyra Belacqua",
-          email: "darknorth123@msn.org",
-          password: "password",
-        }),
-      ]);
+    let dbReaders;
+    
+    before(async () => {
+      await Reader.sequelize.sync({ force: true });
+      dbReaders = await Promise.all(
+        readers.map((reader) => Reader.create(reader))
+      );
     });
 
     describe("GET /readers", () => {
@@ -79,20 +82,18 @@ describe("/readers", () => {
         const responseReaders = response.body;
 
         expect(response.status).to.equal(200);
-        expect(responseReaders.length).to.equal(existingReaders.length);
+        expect(responseReaders.length).to.equal(dbReaders.length);
 
-        responseReaders.forEach((responseReader, i) => {
-          expect(responseReader).not.to.have.property("password");
+        dbReaders.forEach((dbReader) => {
+          const matchingResponseReader = responseReaders
+          .find((responseReader) => responseReader.id === dbReader.id);
 
-          const existingReader = existingReaders.find(
-            (existingReader) => existingReader.id === responseReader.id
-          ).get();
+          expect(matchingResponseReader).not.to.have.property("password");       
 
-          const ignoredKeys = ["createdAt", "updatedAt", "password"];
-          Object.keys(existingReader).forEach((key) => {
-            if (ignoredKeys.includes(key)) return;
+          Object.keys(dbReader.toJSON()).forEach((key) => {
+            if (["createdAt", "updatedAt", "password"].includes(key)) return;
 
-            expect(existingReader[key]).to.equal(responseReader[key]);
+            expect(matchingResponseReader[key]).to.equal(dbReader[key]);
           });
         });
       });
@@ -100,36 +101,40 @@ describe("/readers", () => {
 
     describe("GET /readers/:id", () => {
       it("gets readers record by id", async () => {
-        const existingReader = existingReaders[0];
-        const response = await request(app).get(`/readers/${existingReader.id}`);
+        const dbReader = dbReaders[0];
+        const response = await request(app).get(
+          `/readers/${dbReader.id}`
+        );
+
         const responseReader = response.body;
 
         expect(response.status).to.equal(200);
         expect(responseReader).not.to.have.property("password");
 
-        Object.keys(responseReader).forEach((key) => {
-          if (["createdAt", "updatedAt"].includes(key)) return;
+        Object.keys(dbReader.toJSON()).forEach((key) => {
+          if (["createdAt", "updatedAt", "password"].includes(key)) return;
 
-          expect(responseReader[key]).to.equal(existingReader[key]);
+          expect(responseReader[key]).to.equal(dbReader[key]);
         });
       });
 
       it("returns a 404 if the reader does not exist", async () => {
-        const response = await request(app).get("/readers/12345");
-        const errorMsg = response.body.error;
+        const nonExistentId = await Reader.max("id") + 1;
+        const response = await request(app).get(`/readers/${nonExistentId}`);
+
         expect(response.status).to.equal(404);
-        expect(errorMsg).to.equal("Reader not found");
+        expect(response.body.error).to.equal("Reader not found");
       });
     });
 
     describe("PATCH /readers/:id", () => {
-      it("updates readers email by id", async () => {
-        const reader = existingReaders[0];
+      it("updates reader by id", async () => {
+        const dbReader = dbReaders[0];
         const email = "miss_e_bennet@gmail.com";
         const response = await request(app)
-          .patch(`/readers/${reader.id}`)
+          .patch(`/readers/${dbReader.id}`)
           .send({ email });
-        const updatedReaderRecord = await Reader.findByPk(reader.id);
+        const updatedReaderRecord = await Reader.findByPk(dbReader.id);
 
         expect(response.status).to.equal(200);
         expect(response.body).not.to.have.property("password");
@@ -137,8 +142,9 @@ describe("/readers", () => {
       });
 
       it("returns a 404 if the reader does not exist", async () => {
+        const nonExistentId = await Reader.max("id") + 1;
         const response = await request(app)
-          .patch("/readers/12345")
+          .patch(`/readers/${nonExistentId}`)
           .send({ email: "some_new_email@gmail.com" });
 
         expect(response.status).to.equal(404);
@@ -148,7 +154,7 @@ describe("/readers", () => {
 
     describe("DELETE /readers/:id", () => {
       it("deletes reader record by id", async () => {
-        const reader = existingReaders[0];
+        const reader = dbReaders[0];
         const response = await request(app).delete(`/readers/${reader.id}`);
         const deletedReader = await Reader.findByPk(reader.id);
 
@@ -158,7 +164,8 @@ describe("/readers", () => {
       });
 
       it("returns a 404 if the reader is not found", async () => {
-        const response = await request(app).delete("/readers/12345");
+        const nonExistentId = await Reader.max("id") + 1;
+        const response = await request(app).delete(`/readers/${nonExistentId}`);
 
         expect(response.status).to.equal(404);
         expect(response.body.error).to.equal("Reader not found");
