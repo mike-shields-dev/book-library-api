@@ -1,13 +1,9 @@
 const { expect } = require("chai");
 const request = require("supertest");
-const { Author } = require("../src/models");
 const app = require("../src/app");
 
-const authors = [
-  { name  : "J.K. Rowling" },
-  { name  : "J.R.R. Tolkien" },
-  { name  : "Brent Weeks" },
-];
+const { Author } = require("../src/models");
+const { testAuthors } = require("./testData");
 
 describe("/authors", () => {
   before(async () => {
@@ -21,7 +17,7 @@ describe("/authors", () => {
 
     describe("POST /authors", () => {
       it("creates a new author in the database", async () => {
-        const newAuthor = authors[0];
+        const newAuthor = testAuthors[0];
         const response = await request(app).post("/authors").send(newAuthor);
         const responseAuthor = response.body;
 
@@ -49,16 +45,14 @@ describe("/authors", () => {
 
     before(async () => {
       await Author.sequelize.sync({ force: true });
-      dbAuthors = await Promise.all(
-        authors.map((author) => Author.create(author))
-      );
+      dbAuthors = await Author.bulkCreate(testAuthors);
     });
 
     describe("POST /authors", () => {
       it("returns a 400 if name is already in the database", async () => {
         const duplicateAuthorResponse = await request(app)
           .post("/authors")
-          .send(authors[0]);
+          .send(testAuthors[0]);
 
         expect(duplicateAuthorResponse.status).to.equal(400);
         expect(duplicateAuthorResponse.body.error).to.equal(
