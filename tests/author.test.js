@@ -3,6 +3,12 @@ const request = require("supertest");
 const { Author } = require("../src/models");
 const app = require("../src/app");
 
+const authors = [
+  { name  : "J.K. Rowling" },
+  { name  : "J.R.R. Tolkien" },
+  { name  : "Brent Weeks" },
+];
+
 describe("/authors", () => {
   before(async () => {
     await Author.sequelize.sync({ force: true });
@@ -15,7 +21,7 @@ describe("/authors", () => {
 
     describe("POST /authors", () => {
       it("creates a new author in the database", async () => {
-        const newAuthor = { name: "Roald Dahl" };
+        const newAuthor = authors[0];
         const response = await request(app).post("/authors").send(newAuthor);
         const responseAuthor = response.body;
 
@@ -23,17 +29,14 @@ describe("/authors", () => {
         expect(responseAuthor.name).to.equal(newAuthor.name);
       });
 
-      it("returns a 400 if name is not provided", async () => {
+      it("returns a 400 if name fails validation", async () => {
         const nullNameResponse = await request(app).post("/authors").send({});
-
-        expect(nullNameResponse.status).to.equal(400);
-        expect(nullNameResponse.body.error).to.equal("Name must be provided");
-      });
-
-      it("returns a 400 response if name is empty", async () => {
         const emptyNameResponse = await request(app).post("/authors").send({
           name: "",
         });
+
+        expect(nullNameResponse.status).to.equal(400);
+        expect(nullNameResponse.body.error).to.equal("Name must be provided");
 
         expect(emptyNameResponse.status).to.equal(400);
         expect(emptyNameResponse.body.error).to.equal("Name cannot be empty");
@@ -42,12 +45,6 @@ describe("/authors", () => {
   });
 
   describe("with records in the database", async () => {
-    const authors = [
-      { name: "Roald Dahl" },
-      { name: "Jane Austen" },
-      { name: "Virginia Woolf" },
-    ];
-
     let dbAuthors;
 
     before(async () => {
@@ -59,14 +56,12 @@ describe("/authors", () => {
 
     describe("POST /authors", () => {
       it("returns a 400 if name is already in the database", async () => {
-        const repeatedAuthorResponse = await request(app)
+        const duplicateAuthorResponse = await request(app)
           .post("/authors")
-          .send({
-            name: "Roald Dahl",
-          });
+          .send(authors[0]);
 
-        expect(repeatedAuthorResponse.status).to.equal(400);
-        expect(repeatedAuthorResponse.body.error).to.equal(
+        expect(duplicateAuthorResponse.status).to.equal(400);
+        expect(duplicateAuthorResponse.body.error).to.equal(
           "Name already exists"
         );
       });
@@ -81,12 +76,8 @@ describe("/authors", () => {
         expect(responseAuthors.length).to.equal(dbAuthors.length);
 
         dbAuthors.forEach((dbAuthor, i) => {
-          const responseAuthor = responseAuthors[i];
-          Object.keys(dbAuthor.toJSON()).forEach(key => {
-            if(["createdAt", "updatedAt"].includes(key)) return;
-            
-            expect(dbAuthor[key]).to.equal(responseAuthor[key]);
-          });
+          const responseAuthor = responseAuthors[i]
+          expect(dbAuthor.name).to.equal(responseAuthor.name);
         });
       });
     });
@@ -98,12 +89,8 @@ describe("/authors", () => {
         const responseAuthor = response.body;
 
         expect(response.status).to.equal(200);
-        
-        Object.keys(dbAuthor.toJSON()).forEach(key => {
-          if(["createdAt", "updatedAt"].includes(key)) return;
-
-          expect(dbAuthor[key]).to.equal(responseAuthor[key]);
-        })
+        expect(dbAuthor.name).to.equal(responseAuthor.name);
+      
       });
 
       it("returns a 404 if author is not found", async () => {
