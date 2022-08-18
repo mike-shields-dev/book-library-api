@@ -1,57 +1,68 @@
 const { expect } = require("chai");
 const request = require("supertest");
-const { Book } = require("../src/models");
 const app = require("../src/app");
 
-describe("/books", () => {
-  before(async () => Book.sequelize.sync());
+const { Book } = require("../src/models");
+const { testBooks } = require("./testData");
 
-  beforeEach(async () => {
-    await Book.destroy({ where: {} });
+describe("/books", () => {
+  before(async () => {
+    await Book.sequelize.sync({ force: true });
   });
 
   describe("with no records in the database", () => {
     describe("POST /books", () => {
+      beforeEach(async () => {
+        await Book.destroy({ where: {} });
+      });
+
       it("creates a new book in the database", async () => {
-        const newBook = {
-          title: "The Lord of the Rings",
-          author: "J.R.R. Tolkien",
-          genre: "Fantasy",
-          ISBN: "978-0-395-19395-8",
-        };
+        const newBook = testBooks[0];
         const response = await request(app).post("/books").send(newBook);
         const createdBook = response.body;
 
         expect(response.status).to.equal(201);
 
-        Object.keys(newBook).forEach(key => {
+        Object.keys(createdBook).forEach((key) => {
+          if (["id", "createdAt", "updatedAt"].includes(key)) return;
+
           expect(newBook[key]).to.equal(createdBook[key]);
         });
       });
 
-      it("returns a 400 if title is not provided", async () => {
-        const response = await request(app).post("/books").send({
-          author: "J.R.R. Tolkien",
-          genre: "Fantasy",
-          ISBN: "978-0-395-19395-8",
-        });
+      it("returns a 400 if title does not pass validation", async () => {
+        const { title, ...newBookNoTitle } = testBooks[0];
+        const newBookEmptyTitle = { ...testBooks[0], title: "" };
+        const responseNoTitle = await request(app)
+          .post("/books")
+          .send(newBookNoTitle);
+        const responseEmptyTitle = await request(app)
+          .post("/books")
+          .send(newBookEmptyTitle);
 
-        expect(response.status).to.equal(400);
-        expect(response.body.error).to.equal(
-          "notNull Violation: Book.title cannot be null"
-        );
+        expect(responseNoTitle.status).to.equal(400);
+        expect(responseNoTitle.body.error).to.equal("Title must be provided");
+
+        expect(responseEmptyTitle.status).to.equal(400);
+        expect(responseEmptyTitle.body.error).to.equal("Title cannot be empty");
       });
 
-      it("returns a 400 if author is not provided", async () => {
-        const response = await request(app).post("/books").send({
-          title: "The Lord of the Rings",
-          genre: "Fantasy",
-          ISBN: "978-0-395-19395-8",
-        });
+      it("returns a 400 if author does not pass validation", async () => {
+        const { author, ...newBookNoAuthor } = testBooks[0];
+        const newBookEmptyAuthor = { ...testBooks[0], author: "" };
+        const responseNoAuthor = await request(app)
+          .post("/books")
+          .send(newBookNoAuthor);
+        const responseEmptyAuthor = await request(app)
+          .post("/books")
+          .send(newBookEmptyAuthor);
 
-        expect(response.status).to.equal(400);
-        expect(response.body.error).to.equal(
-          "notNull Violation: Book.author cannot be null"
+        expect(responseNoAuthor.status).to.equal(400);
+        expect(responseNoAuthor.body.error).to.equal("Author must be provided");
+
+        expect(responseEmptyAuthor.status).to.equal(400);
+        expect(responseEmptyAuthor.body.error).to.equal(
+          "Author cannot be empty"
         );
       });
     });
@@ -59,27 +70,8 @@ describe("/books", () => {
 
   describe("with records in the database", () => {
     let dbBooks;
-    beforeEach(async () => {
-      dbBooks = await Promise.all([
-        Book.create({
-          title: "The Lord of the Rings",
-          author: "J.R.R. Tolkien",
-          genre: "Fantasy",
-          ISBN: "978-0-395-19395-8",
-        }),
-        Book.create({
-          title: "The Hobbit",
-          author: "J.R.R. Tolkien",
-          genre: "Fantasy",
-          ISBN: "978-0-395-19395-8",
-        }),
-        Book.create({
-          title: "The Fellowship of the Ring",
-          author: "J.R.R. Tolkien",
-          genre: "Fantasy",
-          ISBN: "978-0-395-19395-8",
-        }),
-      ]);
+    before(async () => {
+      dbBooks = await Book.bulkCreate(testBooks);
     });
 
     describe("GET /books", () => {
@@ -88,16 +80,16 @@ describe("/books", () => {
         const responseBooks = response.body;
 
         expect(response.status).to.equal(200);
-        expect(responseBooks.length).to.equal(dbBooks.length);
 
-        responseBooks.forEach((responseBook, i) => {
-          const dbBook = dbBooks[i]
-          
-          const ignoredKeys = ["createdAt", "updatedAt"];
-          Object.keys(responseBook).forEach((key) => {
-            if(ignoredKeys.includes(key)) return; 
-            
-            expect(responseBook[key]).to.equal(dbBook[key])
+        dbBooks.forEach((dbBook, i) => {
+          const matchingResponseBook = responseBooks.find(
+            (responseBook) => responseBook.id === dbBook.id
+          );
+
+          Object.keys(dbBook.toJSON()).forEach((key) => {
+            if (["createdAt", "updatedAt"].includes(key)) return;
+
+            expect(matchingResponseBook[key]).to.equal(dbBook[key]);
           });
         });
       });
@@ -105,16 +97,16 @@ describe("/books", () => {
 
     describe("GET /books/:id", () => {
       it("gets books record by id", async () => {
-        const { dataValues: dbBook } = dbBooks[0];
+        const dbBook = dbBooks[0];
         const response = await request(app).get(`/books/${dbBook.id}`);
         const responseBook = response.body;
 
         expect(response.status).to.equal(200);
-        
-        Object.keys(responseBook).forEach(key => {
-          if(["createdAt", "updatedAt"].includes(key)) return; 
 
-          expect(responseBook[key]).to.equal(dbBook[key]);
+        Object.keys(dbBook.toJSON()).forEach((key) => {
+          if (["createdAt", "updatedAt"].includes(key)) return;
+
+          expect(dbBook[key]).to.equal(responseBook[key]);
         });
       });
 
@@ -151,10 +143,9 @@ describe("/books", () => {
 
     describe("DELETE /books/:id", () => {
       it("deletes a book record by id", async () => {
-        const book = dbBooks[0];
-        const response = await request(app).delete(`/books/${book.id}`);
-
-        const deletedBookRecord = await Book.findByPk(book.id);
+        const dbBook = dbBooks[0];
+        const response = await request(app).delete(`/books/${dbBook.id}`);
+        const deletedBookRecord = await Book.findByPk(dbBook.id);
 
         expect(response.status).to.equal(204);
         expect(deletedBookRecord).to.equal(null);
