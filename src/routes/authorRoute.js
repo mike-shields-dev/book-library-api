@@ -1,7 +1,20 @@
-const { createOne } = require("../controllers/authorController");
-
 const router = require("express").Router();
 
-router.route("/").post(createOne);
+const {
+  createOne,
+  readAll,
+  readOne,
+  updateOne,
+  deleteOne,
+} = require("../controllers/authorController");
+
+router.route("/")
+  .post(createOne)
+  .get(readAll);
+
+router.route("/:id")
+  .get(readOne)
+  .patch(updateOne)
+  .delete(deleteOne);
 
 module.exports = router;
