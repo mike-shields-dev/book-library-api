@@ -96,7 +96,7 @@ describe("/books", () => {
     });
 
     describe("GET /books/:id", () => {
-      it("gets books record by id", async () => {
+      it("gets a book by id", async () => {
         const dbBook = dbBooks[0];
         const response = await request(app).get(`/books/${dbBook.id}`);
         const responseBook = response.body;
@@ -110,11 +110,19 @@ describe("/books", () => {
         });
       });
 
-      it("returns a 404 if the book is not found", async () => {
-        const response = await request(app).get("/books/123");
+      it("returns a 404 if id does not exist", async () => {
+        const notExistsId = await Book.max("id") + 1;
+        const response = await request(app).get(`/books/${notExistsId}`);
 
         expect(response.status).to.equal(404);
         expect(response.body.error).to.equal("Book not found");
+      });
+
+      it("returns a 400 if id is not a number", async () => {
+        const response = await request(app).get(`/books/x`);
+
+        expect(response.status).to.equal(400);
+        expect(response.body.error).to.equal("id must be a number");
       });
     });
 
@@ -131,13 +139,21 @@ describe("/books", () => {
         expect(updatedBookRecord.title).to.equal("The Lord of the Rings 2");
       });
 
-      it("returns a 404 if the book is not found", async () => {
+      it("returns a 404 if id does not exist", async () => {
+        const notExistsId = await Book.max("id") + 1;
         const response = await request(app)
-          .patch("/books/123")
+          .patch(`/books/${notExistsId}`)
           .send({ title: "The Lord of the Rings 2" });
 
         expect(response.status).to.equal(404);
         expect(response.body.error).to.equal("Book not found");
+      });
+
+      it("returns 400 if id is not a number", async () => {
+        const response = await request(app).patch(`/books/x`).send({});
+
+        expect(response.status).to.equal(400);
+        expect(response.body.error).to.equal("id must be a number");
       });
     });
 
@@ -151,11 +167,19 @@ describe("/books", () => {
         expect(deletedBookRecord).to.equal(null);
       });
 
-      it("returns a 404 if the book is not found", async () => {
-        const response = await request(app).delete("/books/123");
+      it("returns a 404 if id does not exist", async () => {
+        const notExistsId = await Book.max("id") + 1;
+        const response = await request(app).delete(`/books/${notExistsId}`);
 
         expect(response.status).to.equal(404);
         expect(response.body.error).to.equal("Book not found");
+      });
+
+      it("returns 400 if id is not a number", async () => {
+        const response = await request(app).delete(`/books/x`);
+
+        expect(response.status).to.equal(400);
+        expect(response.body.error).to.equal("id must be a number");
       });
     });
   });
