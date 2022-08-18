@@ -32,10 +32,10 @@ describe("/authors", () => {
         });
 
         expect(nullNameResponse.status).to.equal(400);
-        expect(nullNameResponse.body.error).to.equal("Name must be provided");
+        expect(nullNameResponse.body.error).to.equal("Author name must be provided");
 
         expect(emptyNameResponse.status).to.equal(400);
-        expect(emptyNameResponse.body.error).to.equal("Name cannot be empty");
+        expect(emptyNameResponse.body.error).to.equal("Author name cannot be empty");
       });
     });
   });
@@ -56,7 +56,7 @@ describe("/authors", () => {
 
         expect(duplicateAuthorResponse.status).to.equal(400);
         expect(duplicateAuthorResponse.body.error).to.equal(
-          "Name already exists"
+          "Author name already exists"
         );
       });
     });
@@ -76,7 +76,7 @@ describe("/authors", () => {
     });
 
     describe("GET /authors/:id", () => {
-      it("returns a single author in the database", async () => {
+      it("gets an author by id", async () => {
         const dbAuthor = dbAuthors[0]
         const response = await request(app).get(`/authors/${dbAuthor.id}`);
         const responseAuthor = response.body;

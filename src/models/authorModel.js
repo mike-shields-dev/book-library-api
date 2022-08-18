@@ -4,14 +4,14 @@ module.exports = (dbConnection, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
       unique: {
-        msg: "Name already exists",
+        msg: "Author name already exists",
       },
       validate: {
         notNull: {
-          msg: "Name must be provided",
+          msg: "Author name must be provided",
         },
         notEmpty: {
-          msg: "Name cannot be empty",
+          msg: "Author name cannot be empty",
         },
       },
     },
