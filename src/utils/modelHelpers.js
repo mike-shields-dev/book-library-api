@@ -1,4 +1,8 @@
 async function handleIdRequest(req, res, model) {
+  const { id } = req.params;
+  if(Number.isNaN(Number(id))) {
+    return res.status(400).json({ error: "id must be a number" });
+  }
   const foundItem = await model.findByPk(req.params.id);
   if (!foundItem) {
     return res.status(404).json({ error: `${model.name} not found` });
