@@ -8,6 +8,9 @@ module.exports = (dbConnection, DataTypes) => {
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: {
+        msg: "Genre name already exists",
+      },
       validate: {
         notNull: {
           msg: "Genre name must be provided",

@@ -50,8 +50,23 @@ describe("/genres", () => {
 
   describe("with records in the database", () => {
     let dbGenres;
-    beforeEach(async () => {
+
+    before(async () => {
+      await Genre.sequelize.sync({ force: true });
       dbGenres = await Genre.bulkCreate(testGenres);
+    });
+    
+    describe("POST /genres", () => {
+      it("returns a 400 if name is already in the database", async () => {
+        const responseDuplicateGenre = await request(app)
+          .post("/genres")
+          .send(testGenres[0]);
+
+        expect(responseDuplicateGenre.status).to.equal(400);
+        expect(responseDuplicateGenre.body.error).to.equal(
+          "Genre name already exists"
+        );
+      });
     });
 
     describe("GET /genres", () => {
@@ -122,6 +137,30 @@ describe("/genres", () => {
 
       it("returns a 400 if id is not a number", async () => {
         const response = await request(app).patch("/genres/x");
+
+        expect(response.status).to.equal(400);
+        expect(response.body.error).to.equal("id must be a number");
+      });
+    });
+
+    describe("DELETE /genres/:id", () => {
+      it("deletes a genre by id", async () => {
+        const dbGenre = dbGenres[0];
+        const response = await request(app).delete(`/genres/${dbGenre.id}`);
+
+        expect(response.status).to.equal(204);
+      });
+
+      it("returns a 404 if id does not exist", async () => {
+        const nonExistentGenreId = await Genre.max("id") + 1;
+        const response = await request(app).delete(`/genres/${nonExistentGenreId}`);
+
+        expect(response.status).to.equal(404);
+        expect(response.body.error).to.equal("Genre not found");
+      });
+
+      it("returns a 400 if id is not a number", async () => {
+        const response = await request(app).delete("/genres/x");
 
         expect(response.status).to.equal(400);
         expect(response.body.error).to.equal("id must be a number");
