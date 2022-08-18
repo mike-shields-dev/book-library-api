@@ -1,5 +1,11 @@
-const { Book } = require('../models');
-const { createItem, readAllItems, readOneItem, updateOneItem, deleteOneItem } = require('../utils/modelHelpers');
+const { Book } = require("../models");
+const {
+  createItem,
+  readAllItems,
+  readOneItem,
+  updateOneItem,
+  deleteOneItem,
+} = require("../utils/modelHelpers");
 
 exports.createOne = (req, res) => createItem(req, res, Book);
 exports.readAll = (req, res) => readAllItems(req, res, Book);
